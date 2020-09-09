@@ -24,6 +24,7 @@ struct stuclass
 	int jieci;
 	char kemu[L_subject];
 	int week;
+	char location[L_subject];
 }stuclass[Num_Stuclass];
 
 struct DateStuct
