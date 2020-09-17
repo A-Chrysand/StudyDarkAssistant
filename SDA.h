@@ -20,10 +20,13 @@ char AD_File[100] = "F:\\C pj\\Study Drak assisst\\Files Rescoure\\AD.txt";
 
 struct stuclass
 {
-	int xingqi;
-	int jieci;
+
+	float xuefen;
+	char shuxing[L_subject];
 	char kemu[L_subject];
 	int week;
+	int xingqi;		//定位
+	int jieci;		//定位
 	char location[L_subject];
 }stuclass[Num_Stuclass];
 
