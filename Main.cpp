@@ -46,33 +46,25 @@ MainStart:
 
 void PutTodayClass(void)
 {
-	int i, t, NoneClass, Classweek;
+	int i, t, NoneClass;
+	char Classweek[10];
 	for (i = 0, NoneClass = 0; i < Num_Stuclass; i++)
 	{
-		if (stuclass[i].xingqi == Date.weekday && strcmp(stuclass[i].kemu, "None") == 0)
+		if (stuclass[i].xingqi == Date.weekday && strcmp(stuclass[i].mingcheng, "None") == 0)
 		{
 			NoneClass++;
 		}
 	}
 	for (i = 0; i <= Num_Stuclass; i++)			//读取当前HTML中的课表周数
 	{
-		if (stuclass[i].week != 0)
+		if (!strcmp(stuclass[i].week,"0"))
 		{
-			Classweek = stuclass[i].week;
+			strcpy(Classweek , stuclass[i].week);
 			break;
 		}
 	}
 	switch (Date.weekday)
 	{
-	/*
-	case 1:cout << "今天[" << Classweek << "]周星期一：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 2:cout << "今天[" << Classweek << "]周星期二：	 (共" << 5 - NoneClass << "节)" << endl; break;
-	case 3:cout << "今天[" << Classweek << "]周星期三：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 4:cout << "今天[" << Classweek << "]周星期四：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 5:cout << "今天[" << Classweek << "]周星期五：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 6:cout << "今天[" << Classweek << "]周星期六：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 7:cout << "今天[" << Classweek << "]周星期日：  (共" << 5 - NoneClass << "节)" << endl; break;
-	*/
 	case 1:cout << "今天是第[" << Classweek << "]周星期一：" << endl; break;
 	case 2:cout << "今天是第[" << Classweek << "]周星期二：" << endl; break;
 	case 3:cout << "今天是第[" << Classweek << "]周星期三：" << endl; break;
@@ -86,7 +78,7 @@ void PutTodayClass(void)
 	{
 		if (stuclass[i].xingqi == Date.weekday)
 		{
-			if (strcmp(stuclass[i].kemu, "None") == 0)
+			if (strcmp(stuclass[i].mingcheng, "None") == 0)
 			{
 				NoneClass++;
 			}
@@ -100,17 +92,16 @@ void PutTodayClass(void)
 				printf("16:00-17:40	");
 			else if (t == 5)
 				printf("\n19:00-20:40	");
-			printf("%s\n", stuclass[i].kemu);
+			printf("%s\n", stuclass[i].mingcheng);
 			t++;
 		}
 	}
-
-
-}
+	}
 void PutTomorrowClass(void)
 {
-	int i, t, NoneClass, Classweek;
+	int i, t, NoneClass;
 	int Tomorrow_weekday;
+	char Classweek[10];
 	if (Date.weekday == 7)
 	{
 		Tomorrow_weekday = 1;
@@ -121,19 +112,20 @@ void PutTomorrowClass(void)
 	}
 	for (i = 0, NoneClass = 0; i < Num_Stuclass; i++)
 	{
-		if (stuclass[i].xingqi == Tomorrow_weekday && strcmp(stuclass[i].kemu, "None") == 0)
+		if (stuclass[i].xingqi == Tomorrow_weekday && strcmp(stuclass[i].mingcheng, "None") == 0)
 		{
 			NoneClass++;			//空节次计算器
 		}
 	}
 	for (i = 0; i <= Num_Stuclass; i++)			//读取当前HTML中的课表周数
 	{
-		if (stuclass[i].week != 0)
+		if (strcmp(stuclass[i].week,"0") )
 		{
-			Classweek = stuclass[i].week;
+			strcpy(Classweek , stuclass[i].week);
 			break;
 		}
 	}
+
 	switch (Tomorrow_weekday)
 	{
 	/*
@@ -145,13 +137,13 @@ void PutTomorrowClass(void)
 	case 6:cout << "明天[" << Classweek << "]周星期六：  (共" << 5 - NoneClass << "节)" << endl; break;
 	case 7:cout << "明天[" << Classweek << "]周星期日：  (共" << 5 - NoneClass << "节)" << endl; break;
 	*/
-	case 1:cout << "明天—第[" << Classweek << "]周星期一：" << endl; break;
-	case 2:cout << "明天—第[" << Classweek << "]周星期二：" << endl; break;
-	case 3:cout << "明天—第[" << Classweek << "]周星期三：" << endl; break;
-	case 4:cout << "明天—第[" << Classweek << "]周星期四：" << endl; break;
-	case 5:cout << "明天—第[" << Classweek << "]周星期五：" << endl; break;
-	case 6:cout << "明天—第[" << Classweek << "]周星期六：" << endl; break;
-	case 7:cout << "明天—第[" << Classweek << "]周星期日：" << endl; break;
+	case 1:cout << "明天—第" << Classweek << "星期一：" << endl; break;
+	case 2:cout << "明天—第" << Classweek << "星期二：" << endl; break;
+	case 3:cout << "明天—第" << Classweek << "星期三：" << endl; break;
+	case 4:cout << "明天—第" << Classweek << "星期四：" << endl; break;
+	case 5:cout << "明天—第" << Classweek << "星期五：" << endl; break;
+	case 6:cout << "明天—第" << Classweek << "星期六：" << endl; break;
+	case 7:cout << "明天—第" << Classweek << "星期日：" << endl; break;
 	}
 	if (NoneClass == 5)			//如果为5节空堂，则不输出课程表
 	{
@@ -173,7 +165,7 @@ void PutTomorrowClass(void)
 					printf("16:00-17:40	");
 				else if (t == 5)
 					printf("\n19:00-20:40	");
-				printf("%s\n", stuclass[i].kemu);
+				printf("%s\n%s\n",stuclass[i].didian,stuclass[i].mingcheng);
 				t++;
 			}
 		}
@@ -294,14 +286,15 @@ void ReadClassHTML(void)
 	int w;			//星期
 	int j;			//节次
 	int n = 0;			//结构体序号
-	Enter(fp, 10);  //按10次回车，跳转到11行
+	Enter(fp, 11);  //按10次回车，跳转到12行 *2020/9/20更新到12行
 	for (j = 1; j <= 5; j++)
 	{
 		for (w = 1; w <= 7; w++, n++)
 		{
+
+			ReadClass(fp, stuclass[n].xuefen, stuclass[n].shuxing, stuclass[n].mingcheng, stuclass[n].week, stuclass[n].didian);
 			stuclass[n].xingqi = w;
 			stuclass[n].jieci = j;
-			stuclass[n].week = ReadClass(fp, stuclass[n].kemu);
 			Enter(fp, 5);
 		}
 		Enter(fp, 8);
@@ -309,17 +302,56 @@ void ReadClassHTML(void)
 	fclose(fp);
 	for (int i = 28; i <= Num_Stuclass; i++)
 	{
-		if (stuclass[i].xingqi == 2 && stuclass[i].jieci == 5 && strcmp(stuclass[i].kemu, "0") != 0)
+		if (stuclass[i].xingqi == 2 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)
 		{
-			strcpy(stuclass[i].kemu, "自选实体课程");
+			strcpy(stuclass[i].mingcheng, "自选实体课程");
 		}
-		else if (stuclass[i].xingqi == 7 && stuclass[i].jieci == 5 && strcmp(stuclass[i].kemu, "0") != 0)
+		else if (stuclass[i].xingqi == 7 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)
 		{
-			strcpy(stuclass[i].kemu, "自选网络课程");
+			strcpy(stuclass[i].mingcheng, "自选网络课程");
 		}
 	}
 
 }
+void ReadClass(FILE* fp, float rxuefen, char rshuxing[L_subject], char rmingcheng[L_subject], char rweek[6], char rdidian[L_subject])
+{
+	char temp, temp2[L_subject];
+	int i;		//i用于计数'>'，j用于计数'"'
+	while (1)
+	{
+		temp = fgetc(fp);
+		if (temp == '"')
+		{
+			break;
+		}
+		else if (temp == '\n')
+		{
+			fseek(fp, -2, 1);
+			rxuefen = 0;
+			strcpy(rshuxing, "None");
+			strcpy(rmingcheng, "None");
+			strcpy(rdidian, "");
+			return;
+		}
+	}
+	fseek(fp, 10, 1);		//快进到课程学分：后面
+	ReadUntilTarget(fp, temp2, '<');
+	rxuefen = atof(temp2);
+	strcpy(temp2, "0");		//清空缓存数组
+	fseek(fp, 17, 1);		//快进到课程属性：后面
+	ReadUntilTarget(fp, rshuxing, '<');
+	fseek(fp, 14, 1);		//快进到课程名称：后面
+	ReadUntilTarget(fp, rmingcheng, '<');
+	fseek(fp, 16, 1);		////快进到上课时间：第后面
+	ReadUntilTarget(fp, rweek, ' ');
+	fseek(fp, 31, 1);		//快进到上课地点：后面
+	ReadUntilTarget(fp, rdidian, '"');
+	if (strcmp(rdidian, "")==0)
+	{
+		strcpy(rdidian, "None");
+	}
+}
+
 void ReadHomework(void)
 {
 	FILE* fp;
@@ -329,10 +361,10 @@ void ReadHomework(void)
 	int feedback;
 	for (i = 0;; i++)
 	{
-		ReadStar(fp, homework[i].place);
-		ReadStar(fp, homework[i].subject);
+		ReadUntilTarget(fp, homework[i].place,'*');
+		ReadUntilTarget(fp, homework[i].subject,'*');
 		homework[i].strlong = strlen(homework[i].place) + strlen(homework[i].subject);
-		feedback = ReadStar(fp, homework[i].title);
+		feedback = ReadUntilTarget(fp, homework[i].title,'*');
 		if (feedback == 10)
 		{
 			break;
@@ -536,56 +568,7 @@ void FileModTime(char filename[], const char frontstr[])
 	}
 }
 
-int ReadClass(FILE* fp, char StoreClass[50])
-{
-	char Class[50] = "0";
-	char week[5] = "0";
-	char temp;
-	int i, return_week;
-	for (i = 0; i < 3; i++)
-	{
-		while (1)
-		{
-			temp = fgetc(fp);
-			if (temp == '>')
-			{
-				break;
-			}
-			else if (temp == '\n')
-			{
-				fseek(fp, -2, 1);
-				strcpy(Class, "None");
-				strcpy(StoreClass, Class);
-				return 1;
-			}
-		}
-	}
-	for (i = 0; i < 10; i++)
-	{
-		fgetc(fp);			//清除“课程名称：”5个字fu
-	}
-	for (i = 0;; i++)
-	{
-		temp = fgetc(fp);
-		if (temp == '<')
-		{
-			break;
-		}
-		Class[i] = temp;
-	}
-	strcpy(StoreClass, Class);
-	for (i = 0; i < 16; i++)
-	{
-		fgetc(fp);			//清除“br/>上课时间：第”16个字fu
-	}
-	for (i = 0; i < 2; i++)
-	{
-		week[i] = fgetc(fp);
-	}
-	return_week = atoi(week);
-	return return_week;
-}
-int ReadStar(FILE* fp, char address[L_subject])
+int ReadUntilTarget(FILE* fp, char address[L_subject],char target)
 {
 ReadStar_Start:
 	char str[L_subject] = { '0' };
@@ -602,7 +585,7 @@ ReadStar_Start:
 			return 10;
 			break;
 		}
-		else if (str[i] == '*')
+		else if (str[i] == target)
 		{
 			str[i] = '\0';
 			strcpy(address, str);

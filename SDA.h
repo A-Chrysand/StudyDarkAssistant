@@ -7,6 +7,7 @@
 #include <ctime>   
 #include <sys/types.h>    
 #include <sys/stat.h> 
+#include<string.h>
 
 using namespace std;
 
@@ -18,16 +19,15 @@ char Homework_File[100] = "F:\\C pj\\Study Drak assisst\\Files Rescoure\\homewor
 char Class_File[100] = "F:\\C pj\\Study Drak assisst\\Files Rescoure\\weekclass.html";
 char AD_File[100] = "F:\\C pj\\Study Drak assisst\\Files Rescoure\\AD.txt";
 
-struct stuclass
+struct Stuclass
 {
-
 	float xuefen;
 	char shuxing[L_subject];
-	char kemu[L_subject];
-	int week;
-	int xingqi;		//定位
-	int jieci;		//定位
-	char location[L_subject];
+	char mingcheng[L_subject];
+	char week[6]="0";
+	int xingqi;
+	int jieci;
+	char didian[L_subject];
 }stuclass[Num_Stuclass];
 
 struct DateStuct
@@ -62,6 +62,10 @@ void PutHomework();
 void AD(void);
 
 void ReadClassHTML(void);
+
+void ReadClass(FILE* fp, float rxuefen, char rshuxing[L_subject], char rmingcheng[L_subject], char rweek[6], char rdidian[L_subject]);
+
+
 void ReadHomework(void);
 
 void CalculateHomework(void);
@@ -74,7 +78,7 @@ int CaculateTermWeek(void);
 void FileModTime(char filename[], const char frontstr[]);
 
 int ReadClass(FILE* fp, char StoreClass[50]);
-int ReadStar(FILE* fp, char address[L_subject]);
+int ReadUntilTarget(FILE* fp, char address[L_subject], char target);
 int ReadDate(FILE* fp);
 
 void Enter(FILE* fp, int EnterNum);
