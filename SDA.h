@@ -52,35 +52,29 @@ struct Homework
 	int strlong;
 	int lasttime;
 }homework[Num_Homework], puttemp[Num_Homework];
-struct Homework *ph = puttemp;
 
-void PutTodayClass(void);
-void PutTomorrowClass(void);
-
-void PutHomework();
-
-void AD(void);
-
+//PreLoad Files Function
 void ReadClassHTML(void);
-
 void ReadClass(FILE* fp, float rxuefen, char rshuxing[L_subject], char rmingcheng[L_subject], char rweek[6], char rdidian[L_subject]);
-
-
 void ReadHomework(void);
-
+//Output msg Function
+void PutClass(const char JinorMing[3]);
+void PutHomework();
+//AD
+void AD(void);
+//Homework time calculate function
 void CalculateHomework(void);
 int CalculateDay(int i);
 int CalculateTime(int i);
-
+int ReadHomeworkDate(FILE* fp);
+//Time calculate function
 void SystemTime(void);
 int CaculateNowWeekday(int y, int m, int d);
-int CaculateTermWeek(void);
+
 void FileModTime(char filename[], const char frontstr[]);
 
-int ReadClass(FILE* fp, char StoreClass[50]);
+//Custom function
 int ReadUntilTarget(FILE* fp, char address[L_subject], char target);
-int ReadDate(FILE* fp);
-
 void Enter(FILE* fp, int EnterNum);
 void AutoSpace(int strlength);
 void CutConstCharPart(char Res_str[], char store_str[], int from, int to);

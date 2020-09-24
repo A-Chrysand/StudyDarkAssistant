@@ -1,36 +1,35 @@
 #include"SDA.h"
 
+
 int main(void)
 {
 MainStart:
-	system("mode con cols=50 lines=70");
-	ReadClassHTML();
-	ReadHomework();
+	system("mode con cols=50 lines=70");			//设置命令行窗体大小为50个字符宽，70行长
+	system("color 70");								//将命令行设置成白色背景(e),黑色字体(0)
+	ReadClassHTML();								//读取本地课表HTML文件
+	ReadHomework();									//读取本地作业
 	cout << "今天按[1]明天请随意\n>";
 	char IsToday = getchar();
-	getchar();
+	getchar();										//消除空格
+	system("cls");									//清屏
+	SystemTime();									//计算并输出当前系统时间
+	dy20;
 	if (IsToday == '1')
 	{
-		system("cls");
-		SystemTime();
-		dy20;
-		PutTodayClass();
+		PutClass("今");								//如果输入[1]，则输出"今"天课表
 	}
 	else
 	{
-		system("cls");
-		SystemTime();
-		dy20;
-		PutTomorrowClass();
+		PutClass("明");								//如果输入不为[1]，则输出"明"天课表
 	}
-	CalculateHomework();
+	CalculateHomework();							//计算本地作业各种时间
 	dy20;
-	PutHomework();
+	PutHomework();									//输出作业到命令行
 	dy20;
-	AD();
+	AD();											//广告59s
 	dy20;
-	FileModTime(Class_File, "本地课表HTML更新日期");
-	FileModTime(Homework_File, "本地作业列表更新日期");
+	FileModTime(Class_File, "本地课表HTML更新日期");//输出本地HTML文件的更新时间
+	FileModTime(Homework_File, "本地作业列表更新日期");//输出本地作业列表文件的更新时间
 	cout << "\n再来一次请按[1]" << endl;
 	char end = getchar();
 	getchar();
@@ -44,75 +43,133 @@ MainStart:
 	}
 }
 
-void PutTodayClass(void)
+void ReadClassHTML(void)
 {
-	int i, t, NoneClass;
-	char Classweek[10];
-	for (i = 0, NoneClass = 0; i < Num_Stuclass; i++)
+
+	FILE* fp;
+	fopen_s(&fp, Class_File, "r");
+	int w;					//星期
+	int j;					//节次
+	int n = 0;				//结构体序号
+	Enter(fp, 10);			//按10次回车，跳转到11行
+	for (j = 1; j <= 5; j++)//从第1节遍历到第5节
 	{
-		if (stuclass[i].xingqi == Date.weekday && strcmp(stuclass[i].mingcheng, "None") == 0)
+		for (w = 1; w <= 7; w++, n++)//从星期1遍历到星期7
 		{
-			NoneClass++;
+
+			ReadClass(fp, stuclass[n].xuefen, stuclass[n].shuxing, stuclass[n].mingcheng, stuclass[n].week, stuclass[n].didian);	//从HTML中读取课程的各种信息
+			stuclass[n].xingqi = w;		//写入课程的星期
+			stuclass[n].jieci = j;		//写入课程的节次
+			Enter(fp, 5);				//回车5行，跳到下一天的同一节课
+		}
+		Enter(fp, 8);					//回车8行，调到下一节课
+	}
+	fclose(fp);
+	for (int i = 28; i <= Num_Stuclass; i++)
+	{
+		if (stuclass[i].xingqi == 2 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)		//如果星期2，第5节，并且不是空堂的话
+		{
+			strcpy(stuclass[i].mingcheng, "自选实体课程");														//那就重命名为"自选实体课程"
+		}
+		else if (stuclass[i].xingqi == 7 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)	//如果星期7，第5节，并且不是空堂的话
+		{
+			strcpy(stuclass[i].mingcheng, "自选网络课程");														//那就重命名为"自选网络课程"
 		}
 	}
-	for (i = 0; i <= Num_Stuclass; i++)			//读取当前HTML中的课表周数
+
+}
+void ReadClass(FILE* fp, float rxuefen, char rshuxing[L_subject], char rmingcheng[L_subject], char rweek[6], char rdidian[L_subject])
+{
+	char temp;	//读取文件时的缓存变量
+	int i;		//i用于计数'>'，j用于计数'"'
+	while (1)
 	{
-		if (!strcmp(stuclass[i].week,"0"))
+		temp = fgetc(fp);
+		if (temp == '"')
 		{
-			strcpy(Classweek , stuclass[i].week);
+			break;
+		}
+		else if (temp == '\n')
+		{
+			fseek(fp, -2, 1);
+			rxuefen = 0;
+			strcpy(rshuxing, "\\");
+			strcpy(rmingcheng, "\\");		//名称改为'\'
+			strcpy(rdidian, "");			//地点不填
+			return;
+		}
+	}
+	fseek(fp, 10, 1);				//快进到课程学分：后面
+	char Rxuefen[10];					//创建一个变量用以临时储存学分
+	ReadUntilTarget(fp, Rxuefen, '<');			/*读取课程学分*/
+	rxuefen = atof(Rxuefen);			//将学分从字符型转换为浮点型	
+	strcpy(Rxuefen, "0");				//清空缓存数组
+	fseek(fp, 17, 1);				//快进到课程属性：后面
+	ReadUntilTarget(fp, rshuxing, '<');			/*读取课程属性*/
+	fseek(fp, 14, 1);				//快进到课程名称：后面
+	ReadUntilTarget(fp, rmingcheng, '<');		/*读取课程名称*/
+	fseek(fp, 16, 1);				//快进到上课时间：第后面
+	ReadUntilTarget(fp, rweek, ' ');			/*读取课程周次*/
+	fseek(fp, 31, 1);				//快进到上课地点：后面
+	ReadUntilTarget(fp, rdidian, '"');			/*读取课程地点*/
+	if (strcmp(rdidian, "") == 0)
+	{
+		strcpy(rdidian, "None");	//如果没有上课地点的话，手动赋值"None"
+	}
+}
+void ReadHomework(void)
+{
+	FILE* fp;
+	fopen_s(&fp, Homework_File, "r");
+	Enter(fp, 4);		//跳过4行注释
+	int i;
+	int feedback;
+	for (i = 0;; i++)
+	{
+		ReadUntilTarget(fp, homework[i].place, '*');										//读取作业的平台
+		ReadUntilTarget(fp, homework[i].subject, '*');										//读取作业的科目
+		homework[i].strlong = strlen(homework[i].place) + strlen(homework[i].subject);		//赋值作业的字符长度，用于等下填充空格
+		feedback = ReadUntilTarget(fp, homework[i].title, '*');								//读取作业的题目
+		if (feedback == 10)						//返回值为10意味着文件读完了
+		{
+			break;
+		}
+		homework[i].month = ReadHomeworkDate(fp);													//读取作业的月
+		homework[i].day = ReadHomeworkDate(fp);														//读取作业的日
+		homework[i].hour = ReadHomeworkDate(fp);													//读取作业的小时
+		homework[i].minute = ReadHomeworkDate(fp);													//读取作业的分钟
+		if (feedback == 10)						//返回值为10意味着文件读完了
+		{
 			break;
 		}
 	}
-	switch (Date.weekday)
-	{
-	case 1:cout << "今天是第[" << Classweek << "]周星期一：" << endl; break;
-	case 2:cout << "今天是第[" << Classweek << "]周星期二：" << endl; break;
-	case 3:cout << "今天是第[" << Classweek << "]周星期三：" << endl; break;
-	case 4:cout << "今天是第[" << Classweek << "]周星期四：" << endl; break;
-	case 5:cout << "今天是第[" << Classweek << "]周星期五：" << endl; break;
-	case 6:cout << "今天是第[" << Classweek << "]周星期六：" << endl; break;
-	case 7:cout << "今天是第[" << Classweek << "]周星期日：" << endl; break;
-	default: break;
-	}
-	for (i = 0, t = 1; i < Num_Stuclass; i++)
-	{
-		if (stuclass[i].xingqi == Date.weekday)
-		{
-			if (strcmp(stuclass[i].mingcheng, "None") == 0)
-			{
-				NoneClass++;
-			}
-			if (t == 1)
-				printf("08:00-09:40	");
-			else if (t == 2)
-				printf("10:00-11:40	");
-			else if (t == 3)
-				printf("\n14:00-15:40	");
-			else if (t == 4)
-				printf("16:00-17:40	");
-			else if (t == 5)
-				printf("\n19:00-20:40	");
-			printf("%s\n", stuclass[i].mingcheng);
-			t++;
-		}
-	}
-	}
-void PutTomorrowClass(void)
+	fclose(fp);
+}
+
+void PutClass(const char JinorMing[3])
 {
 	int i, t, NoneClass;
-	int Tomorrow_weekday;
+
+	int tempoptweekday;
 	char Classweek[10];
-	if (Date.weekday == 7)
+	if (strcmp(JinorMing, "今") == 0)
 	{
-		Tomorrow_weekday = 1;
+		tempoptweekday = Date.weekday;
 	}
-	else
+	else if (strcmp(JinorMing, "明") == 0)
 	{
-		Tomorrow_weekday = Date.weekday + 1;
+		if (Date.weekday == 7)
+		{
+			tempoptweekday = 1;
+		}
+		else
+		{
+			tempoptweekday = Date.weekday + 1;
+		}
 	}
 	for (i = 0, NoneClass = 0; i < Num_Stuclass; i++)
 	{
-		if (stuclass[i].xingqi == Tomorrow_weekday && strcmp(stuclass[i].mingcheng, "None") == 0)
+		if (stuclass[i].xingqi == tempoptweekday && strcmp(stuclass[i].mingcheng, "None") == 0)
 		{
 			NoneClass++;			//空节次计算器
 		}
@@ -125,25 +182,15 @@ void PutTomorrowClass(void)
 			break;
 		}
 	}
-
-	switch (Tomorrow_weekday)
+	switch (tempoptweekday)
 	{
-	/*
-	case 1:cout << "明天[" << Classweek << "]周星期一：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 2:cout << "明天[" << Classweek << "]周星期二：	 (共" << 5 - NoneClass << "节)" << endl; break;
-	case 3:cout << "明天[" << Classweek << "]周星期三：	 (共" << 5 - NoneClass << "节)" << endl; break;
-	case 4:cout << "明天[" << Classweek << "]周星期四：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 5:cout << "明天[" << Classweek << "]周星期五：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 6:cout << "明天[" << Classweek << "]周星期六：  (共" << 5 - NoneClass << "节)" << endl; break;
-	case 7:cout << "明天[" << Classweek << "]周星期日：  (共" << 5 - NoneClass << "节)" << endl; break;
-	*/
-	case 1:cout << "明天—第" << Classweek << "星期一：" << endl; break;
-	case 2:cout << "明天—第" << Classweek << "星期二：" << endl; break;
-	case 3:cout << "明天—第" << Classweek << "星期三：" << endl; break;
-	case 4:cout << "明天—第" << Classweek << "星期四：" << endl; break;
-	case 5:cout << "明天—第" << Classweek << "星期五：" << endl; break;
-	case 6:cout << "明天—第" << Classweek << "星期六：" << endl; break;
-	case 7:cout << "明天—第" << Classweek << "星期日：" << endl; break;
+	case 1:cout << JinorMing << "天は第" << Classweek << "星期一：" << endl; break;
+	case 2:cout << JinorMing << "天は第" << Classweek << "星期二：" << endl; break;
+	case 3:cout << JinorMing << "天は第" << Classweek << "星期三：" << endl; break;
+	case 4:cout << JinorMing << "天は第" << Classweek << "星期四：" << endl; break;
+	case 5:cout << JinorMing << "天は第" << Classweek << "星期五：" << endl; break;
+	case 6:cout << JinorMing << "天は第" << Classweek << "星期六：" << endl; break;
+	case 7:cout << JinorMing << "天は第" << Classweek << "星期日：" << endl; break;
 	}
 	if (NoneClass == 5)			//如果为5节空堂，则不输出课程表
 	{
@@ -153,25 +200,32 @@ void PutTomorrowClass(void)
 	{
 		for (i = 0, t = 1; i < Num_Stuclass; i++)
 		{
-			if (stuclass[i].xingqi == Tomorrow_weekday)
+			if (stuclass[i].xingqi == tempoptweekday)
 			{
 				if (t == 1)
-					printf("08:00-09:40	");
+					cout << "【第一节】";
 				else if (t == 2)
-					printf("10:00-11:40	");
+					cout << "【第二节】";
 				else if (t == 3)
-					printf("\n14:00-15:40	");
+					cout << "【第三节】";
 				else if (t == 4)
-					printf("16:00-17:40	");
+					cout << "【第四节】";
 				else if (t == 5)
-					printf("\n19:00-20:40	");
-				printf("%s\n%s\n",stuclass[i].didian,stuclass[i].mingcheng);
+					cout << "【第五节】";
+				cout << stuclass[i].mingcheng << "\n          ";
+				if (strcmp(stuclass[i].didian, "") != 0)
+				{
+					cout << '[' << stuclass[i].didian << ']' << endl;	//如果不是空地点那么就输出"[地点]"
+				}
+				else
+				{
+					cout << endl;
+				}
 				t++;
 			}
 		}
 	}
 }
-
 void PutHomework()
 {
 	int i, j;
@@ -278,109 +332,6 @@ void AD(void)
 	cout << "\n" << endl;
 }
 
-void ReadClassHTML(void)
-{
-
-	FILE* fp;
-	fopen_s(&fp, Class_File, "r");
-	int w;			//星期
-	int j;			//节次
-	int n = 0;			//结构体序号
-	Enter(fp, 11);  //按10次回车，跳转到12行 *2020/9/20更新到12行
-	for (j = 1; j <= 5; j++)
-	{
-		for (w = 1; w <= 7; w++, n++)
-		{
-
-			ReadClass(fp, stuclass[n].xuefen, stuclass[n].shuxing, stuclass[n].mingcheng, stuclass[n].week, stuclass[n].didian);
-			stuclass[n].xingqi = w;
-			stuclass[n].jieci = j;
-			Enter(fp, 5);
-		}
-		Enter(fp, 8);
-	}
-	fclose(fp);
-	for (int i = 28; i <= Num_Stuclass; i++)
-	{
-		if (stuclass[i].xingqi == 2 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)
-		{
-			strcpy(stuclass[i].mingcheng, "自选实体课程");
-		}
-		else if (stuclass[i].xingqi == 7 && stuclass[i].jieci == 5 && strcmp(stuclass[i].mingcheng, "0") != 0)
-		{
-			strcpy(stuclass[i].mingcheng, "自选网络课程");
-		}
-	}
-
-}
-void ReadClass(FILE* fp, float rxuefen, char rshuxing[L_subject], char rmingcheng[L_subject], char rweek[6], char rdidian[L_subject])
-{
-	char temp, temp2[L_subject];
-	int i;		//i用于计数'>'，j用于计数'"'
-	while (1)
-	{
-		temp = fgetc(fp);
-		if (temp == '"')
-		{
-			break;
-		}
-		else if (temp == '\n')
-		{
-			fseek(fp, -2, 1);
-			rxuefen = 0;
-			strcpy(rshuxing, "None");
-			strcpy(rmingcheng, "None");
-			strcpy(rdidian, "");
-			return;
-		}
-	}
-	fseek(fp, 10, 1);		//快进到课程学分：后面
-	ReadUntilTarget(fp, temp2, '<');
-	rxuefen = atof(temp2);
-	strcpy(temp2, "0");		//清空缓存数组
-	fseek(fp, 17, 1);		//快进到课程属性：后面
-	ReadUntilTarget(fp, rshuxing, '<');
-	fseek(fp, 14, 1);		//快进到课程名称：后面
-	ReadUntilTarget(fp, rmingcheng, '<');
-	fseek(fp, 16, 1);		////快进到上课时间：第后面
-	ReadUntilTarget(fp, rweek, ' ');
-	fseek(fp, 31, 1);		//快进到上课地点：后面
-	ReadUntilTarget(fp, rdidian, '"');
-	if (strcmp(rdidian, "")==0)
-	{
-		strcpy(rdidian, "None");
-	}
-}
-
-void ReadHomework(void)
-{
-	FILE* fp;
-	fopen_s(&fp, Homework_File, "r");
-	Enter(fp, 4);		//跳过4行注释
-	int i;
-	int feedback;
-	for (i = 0;; i++)
-	{
-		ReadUntilTarget(fp, homework[i].place,'*');
-		ReadUntilTarget(fp, homework[i].subject,'*');
-		homework[i].strlong = strlen(homework[i].place) + strlen(homework[i].subject);
-		feedback = ReadUntilTarget(fp, homework[i].title,'*');
-		if (feedback == 10)
-		{
-			break;
-		}
-		homework[i].month = ReadDate(fp);
-		homework[i].day = ReadDate(fp);
-		homework[i].hour = ReadDate(fp);
-		homework[i].minute = ReadDate(fp);
-		if (feedback == 10)
-		{
-			break;
-		}
-	}
-	fclose(fp);
-}
-
 void CalculateHomework(void)
 {
 	int day;
@@ -434,6 +385,39 @@ int CalculateTime(int i)
 	//answer = minus - hour * 3600 - min * 60;
 
 }
+int ReadHomeworkDate(FILE* fp)
+{
+	char num[L_subject];
+	/*
+	for (int i = 0;; i++)
+	{
+		if (fp == NULL)
+		{
+			return 10;
+			break;
+		}
+		num[i] = fgetc(fp);
+		if (num[i] == EOF)
+		{
+			return 10;
+			break;
+		}
+		else if (num[i] == '.')
+		{
+			num[i] = '\0';
+			break;
+		}
+		else if (num[i] == '\n')
+		{
+				num[i] = '\0';
+				break;
+		}
+	}*/
+	ReadUntilTarget(fp, num, '.');
+	int date;
+	date = atoi(num);
+	return date;
+}
 
 void SystemTime(void)
 {
@@ -482,26 +466,7 @@ int CaculateNowWeekday(int y, int m, int d)
 	case 6: return 7; break;
 	}
 }
-int CaculateTermWeek(void)
-{
-	int Monthday_number[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
-	int day_number = 0, nowweek, termweek;
-	for (int i = 0; i < Date.month - 1; i++)			//计算当前月数所代表的的天书
-	{
-		day_number = day_number + Monthday_number[i];
-	}
-	day_number = day_number + Date.day;					//加上当前的日期得到总天数
-	if (nowweek = day_number % 7 != 0)
-	{
-		nowweek = (day_number / 7) + 1;
-	}
-	else
-	{
-		nowweek = day_number / 7;							//计算出当天是第几周
-	}
-	termweek = nowweek - 10 + 1;
-	return termweek;
-}
+
 void FileModTime(char filename[], const char frontstr[])
 {
 	struct stat buf;
@@ -606,37 +571,7 @@ ReadStar_Start:
 		}
 	}
 }
-int ReadDate(FILE* fp)
-{
-	char num[L_subject];
-	for (int i = 0;; i++)
-	{
-		if (fp == NULL)
-		{
-			return 10;
-			break;
-		}
-		num[i] = fgetc(fp);
-		if (num[i] == EOF)
-		{
-			return 10;
-			break;
-		}
-		else if (num[i] == '.')
-		{
-			num[i] = '\0';
-			break;
-		}
-		else if (num[i] == '\n')
-		{
-				num[i] = '\0';
-				break;
-		}
-	}
-	int date;
-	date = atoi(num);
-	return date;
-}
+
 
 void Enter(FILE* fp, int EnterNum)
 {
